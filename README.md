@@ -1,7 +1,7 @@
 # OS
 2020-2 OS
 
-* 과제 01 Kernel System Call 이해와 구현
+## 과제 01 Kernel System Call 이해와 구현
 
 * 인터럽트와 trap 비교
 
@@ -25,3 +25,8 @@ libc.a(GNU C 표준 라이브러리)에 정의된 wrapper function(포장함수)
 USER level에서 실행된 프로세스는 libc에 저장되어있는 read()함수를 호출한다. 그러면, 어셈블리어로 작성된 read()가 실행된다. read() 시스템 콜의 고유번호를 eax레지스터에 저장하고, 어셈블리 코드에서 Trap형식으로 시스템 콜이 실행된다.(Trap 이라고 호칭하는 이유는 이벤트와 별개로 내가 실행하던 flow가 있는 게 아니고, 수행 중이던 프로그램 내에서 발생한 동기적 이벤트이기 때문이다. intel에서는 int 0x80와 같은 int명령으로 트랩을 발생시킨다.) 이때, 발생된 trap은 interrupt나 trap이 걸렸을 때, 수행해야 할 핸들러의 주소를 저장해 두는 구조체인 IDT(=Interrupt Descriptor Table)의 0x80에 대응되는 entry에 등록되어 있는 System_call를 호출한다. system_call() 함수에서는 호출된 시스템 콜 번호와 모든 레지스터를 스택에 저장하고 올바른 시스템 콜 번호인지 검사한 후, eax에 저장되어 있는 시스템 콜 번호를 인덱스로 sys_call_table을 탐색하여 그 번호에 해당하는 함수(sys_read())를 호출한다. 이 함수가 종료하면 entry에 정의되어 있는 ret_from_sys_call()함수에 의해 사용자 프로세서로 돌아간다. 
 
 간단하게 정리하자면, libc의 read()함수 호출->0xNN trap 발생->IDT의 0xNN에 대응되는 함수 호출->eax값(시스템 콜 번호)을 인덱스로 sys_call_table을 찾아서 번호에 해당하는 시스템 콜(sys_read()) 호출 순으로 진행된다.
+
+
+
+# 과제 02 가상메모리의 이해와 procfs를 사용한 분석
+* getvirtmem.c
