@@ -1,27 +1,72 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-int main(int argc, char* argv[]){
-	int pid=-1;
-	int dur=10;	//default값
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 
-	// pid랑 duration 입력안함.
-	if(argc<2){printf("%s pid duration: duration default=10",argv[0]); return -1;}
-	else if(argc!=2){dur = atoi(argv[2]);}
-	pid = atoi(argv[1]);
+void get_info(char *info)
+{ 
+	char dest[30];
+	sprintf(dest, "/proc/%s", info);
+
+	char buffer[1024];
+ 	size_t bytes_read=0;
+ 	int count = 0;
 	
-	//pid 랑 dur에 문자가 들어있을 때
-	if(pid<=0||dur<=0){return -1;}
-	printf("pid:%d,dur:%d\n",pid,dur);
+	FILE *fp=fopen(dest,"r");
+	while(feof(fp)==0){
+		count = fread(buffer, 1, sizeof(buffer), fp);
+		printf("%s",buffer);
+		break;
+		memset(buffer,0,sizeof(buffer));
+		bytes_read +=count;
+	 }
+ 	fclose(fp);
+	
+}
 
-	//pid is not exist
+int is_pidndur_ok(int argc, char**argv, int*pid, int*dur){
+
+	// pid값을 입력하지 않았을 때
+	if(argc<2){printf("%s pid duration: duration default=10",*(argv)); return -1;}
+	else if(argc!=2){*dur = atoi(*(argv+2));}
+
+	*pid = atoi(*(argv+1));
+
+	// 문자를 입력했을 때
+	if(*pid<=0||*dur<=0)return -1;
+
+	for(int i=1; i<=argc; i++)
+		printf("%s\t", *(argv+i-1));
+	return 0;
+}
+
+int is_pid_exist(int pid){
 	char command[15];
-	strcpy(command,"ps ");
-	char strpid[10];
-	sprintf(strpid,"%d",pid);
-	strcat(command,strpid);
-	int exist = system(command);
-	if(exist!=0){printf("[%d]%d isn't exist.\n",exist,pid);return-1;}
+	sprintf(command,"ps %d", pid);
+	if(system(command)!=0){printf("%d isn't exist.\n",pid);return-1;}
+	return 0;
+}
+
+int main(int argc, char* argv[]){
+	int pid = -1;
+	int dur = 10; //default값
 	
-	system("cat /proc/meminfo");		
+	if(is_pidndur_ok(argc, argv, &pid, &dur)==-1){return -1;}
+	
+	if(is_pid_exist(pid)==-1){return -1;}
+	
+	//clock_t start_clk = clock();//sleep(), system()과 같이 CPU가 점유하지 않을 때는 시간이 측정되지 않는다.
+	
+	char psstat[10];//stat, statm, status
+	sprintf(psstat, "%d/status", pid);
+	
+	for(int time=0; time<dur*2; time++){
+		printf("\n\n>>>%d\n", time);
+		get_info("meminfo");
+		get_info(psstat);
+		usleep(500000);//usleep(1000000 ) 1초
+	}
+	//clock_t end_clk = clock();
+	//printf("%d\n",(int)((end_clk - start_clk)/CLOCKS_PER_SEC));
 }
