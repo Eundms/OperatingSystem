@@ -4,6 +4,16 @@
 #include <time.h>
 #include <unistd.h>
 
+void parse_data(char *name);
+void get_info(char *info);
+int is_pidndur_ok(int argc, char**argv, int*pid, int*dur);
+int is_pid_exist(int pid);
+
+void parse_data(char *name){
+	for(int i=0; i<strlen(name); i++){
+		if(name[i]>='0'&&name[i]<='9'){printf("%c",name[i]);}
+	}
+}
 void get_info(char *info)
 { 
 	char dest[30];
@@ -14,15 +24,14 @@ void get_info(char *info)
  	int count = 0;
 	
 	FILE *fp=fopen(dest,"r");
+
 	while(feof(fp)==0){
-		count = fread(buffer, 1, sizeof(buffer), fp);
-		printf("%s",buffer);
-		break;
+		fgets(buffer,1024,fp);
+		if(strstr(buffer,"VmRSS")!=NULL){
+			parse_data(buffer); /*printf("%s",buffer);*/}
 		memset(buffer,0,sizeof(buffer));
-		bytes_read +=count;
-	 }
- 	fclose(fp);
-	
+	}
+	fclose(fp);
 }
 
 int is_pidndur_ok(int argc, char**argv, int*pid, int*dur){
@@ -63,7 +72,7 @@ int main(int argc, char* argv[]){
 	
 	for(int time=0; time<dur*2; time++){
 		printf("\n\n>>>%d\n", time);
-		get_info("meminfo");
+		//get_info("meminfo");
 		get_info(psstat);
 		usleep(500000);//usleep(1000000 ) 1초
 	}
