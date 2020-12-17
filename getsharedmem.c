@@ -29,7 +29,7 @@ void get_virtinfo(char *spid)
 	if(fp==NULL){return ;}
 	while(fgets(buffer,1024,fp)!=NULL){
 		sscanf(buffer,"%d %d %d ",&size,&resident,&shared);//공백 기준으로 2번째 숫자이용.
-		printf("%d\n",size);
+		printf("%d\n",shared);
 		memset(buffer,0,sizeof(buffer));
 	}
 	fclose(fp);
